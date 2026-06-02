@@ -6,3 +6,5 @@ lint-fix:
 	golangci-lint run --fix
 test:
 	go test -v ./...
+clean:
+	rm -rf bin/
