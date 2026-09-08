@@ -5,28 +5,42 @@ import (
 	"os"
 )
 
-func GetPathSize(path string) (string, error) {
+func GetPathSize(path string) (int64, error) {
 	fileInfo, err := os.Lstat(path)
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 	if fileInfo.IsDir() {
 		entries, err := os.ReadDir(path)
 		if err != nil {
-			return "", err
+			return 0, err
 		}
 		var totalSize int64
-		for _, entrie := range entries {
-			if entrie.IsDir() {
+		for _, entry := range entries {
+			if entry.IsDir() {
 				continue
 			}
-			info, err := entrie.Info()
+			info, err := entry.Info()
 			if err != nil {
 				continue
 			}
 			totalSize += info.Size()
 		}
-		return fmt.Sprintf("%dB", totalSize), nil
+		return totalSize, nil
 	}
-	return fmt.Sprintf("%dB", fileInfo.Size()), nil
+	return fileInfo.Size(), nil
+}
+
+func FormatSize(size int64, human bool) string {
+	units := []string{"B", "KB", "MB", "GB", "TB", "PB", "EB"}
+	unitIndex := 0
+	value := float64(size)
+	if human {
+		for value >= 1024 && unitIndex < len(units)-1 {
+			value /= 1024
+			unitIndex++
+		}
+		return fmt.Sprintf("%.1f%s", value, units[unitIndex])
+	}
+	return fmt.Sprintf("%dB", size)
 }

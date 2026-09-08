@@ -1,1 +1,66 @@
-world
+Да. main.go теперь связан с твоими функциями правильно.
+
+У тебя получилась хорошая цепочка:
+
+path := cmd.Args().First()
+human := cmd.Bool("human")
+
+size, err := code.GetPathSize(path)
+
+Сначала получаешь путь и флаг, затем вызываешь GetPathSize():
+
+path
+ ↓
+GetPathSize(path)
+ ↓
+int64 size
+
+После этого:
+
+s := code.FormatSize(size, human)
+
+передаёшь размер и значение human в форматтер:
+
+size + human
+      ↓
+FormatSize()
+      ↓
+"24.0MB"
+
+И уже CLI отвечает за итоговый вывод:
+
+fmt.Printf("%s\t%s\n", s, path)
+
+Это соответствует разделению ответственности:
+
+GetPathSize → считает размер
+FormatSize  → форматирует размер
+main.go     → CLI и вывод
+Что теперь проверить
+
+Собери программу:
+
+go build -o bin/hexlet-path-size ./cmd/hexlet-path-size
+
+Потом проверь без флага:
+
+bin/hexlet-path-size testdata/test.txt
+
+Для файла hello\n ожидай:
+
+6B	testdata/test.txt
+
+С флагом:
+
+bin/hexlet-path-size --human testdata/test.txt
+
+должен использоваться человекочитаемый формат.
+
+И обязательно проверь короткий вариант:
+
+bin/hexlet-path-size -H testdata/test.txt
+Но сейчас есть один важный момент
+
+Правильность main.go зависит от того, как именно ты дописал FormatSize(). Ранее там мы исправляли целочисленное деление и случай human == false.
+
+Поэтому сейчас пришли свою актуальную FormatSize() — проверим её на 123, 1024, 1536, 1234567 и 25165824.
